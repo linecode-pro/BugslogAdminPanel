@@ -1,3 +1,4 @@
 # BugslogAdminPanel
 
-![image](https://github.com/user-attachments/assets/efaec9fe-c425-4811-98f1-655b92e331a7)
+![scheme](https://github.com/user-attachments/assets/d5977a84-eda4-4512-b6ff-3b24f5152dd1)
+
