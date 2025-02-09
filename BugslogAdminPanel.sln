@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BugslogAdminPanel", "BugslogAdminPanel\BugslogAdminPanel.csproj", "{45FBF531-CD7D-4814-9763-CFA5F57B505F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoSqlBaseApi", "NoSqlBaseApi\NoSqlBaseApi.csproj", "{F4314962-2B60-471A-9FE5-5D0DE984E3F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIEngineApi", "AIEngineApi\AIEngineApi.csproj", "{9A834297-44E1-4EE9-9F04-A6EF0702C6F5}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{41527F7E-D194-4FD0-BDCD-D6FB91D2FF47}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{2BC37FD4-31DB-4805-A4DC-1F203F47745B}"
+	ProjectSection(SolutionItems) = preProject
+		..\008 - Blazor GigaChat\BlazorGigaChat\russian_trusted_root_ca_pem.crt = ..\008 - Blazor GigaChat\BlazorGigaChat\russian_trusted_root_ca_pem.crt
+		..\008 - Blazor GigaChat\BlazorGigaChat\russian_trusted_sub_ca_pem.crt = ..\008 - Blazor GigaChat\BlazorGigaChat\russian_trusted_sub_ca_pem.crt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45FBF531-CD7D-4814-9763-CFA5F57B505F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45FBF531-CD7D-4814-9763-CFA5F57B505F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45FBF531-CD7D-4814-9763-CFA5F57B505F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45FBF531-CD7D-4814-9763-CFA5F57B505F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4314962-2B60-471A-9FE5-5D0DE984E3F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4314962-2B60-471A-9FE5-5D0DE984E3F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4314962-2B60-471A-9FE5-5D0DE984E3F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4314962-2B60-471A-9FE5-5D0DE984E3F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A834297-44E1-4EE9-9F04-A6EF0702C6F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A834297-44E1-4EE9-9F04-A6EF0702C6F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A834297-44E1-4EE9-9F04-A6EF0702C6F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A834297-44E1-4EE9-9F04-A6EF0702C6F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41527F7E-D194-4FD0-BDCD-D6FB91D2FF47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41527F7E-D194-4FD0-BDCD-D6FB91D2FF47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41527F7E-D194-4FD0-BDCD-D6FB91D2FF47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41527F7E-D194-4FD0-BDCD-D6FB91D2FF47}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

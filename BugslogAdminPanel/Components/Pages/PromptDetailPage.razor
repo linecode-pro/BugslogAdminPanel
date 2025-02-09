@@ -1,0 +1,104 @@
+﻿@using BugslogAdminPanel.Data
+@using BugslogAdminPanel.Services
+@using System.Text.RegularExpressions
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@inject IPromptService promptService;
+@inject DialogService dialogService;
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" @bind-Visible="errorTextVisible">
+    @errorText
+</RadzenAlert>
+
+<RadzenTemplateForm Visible="true" TItem="SimplePrompt" Data=@simplePrompt Submit=@OnSubmit>
+    <RadzenFormField Text="Сообщение">
+        <ChildContent>
+            <RadzenTextArea Style="width: 36em; height: 10em" Name="Message" @bind-Value=@simplePrompt.Message />
+        </ChildContent>
+        <Helper>
+            <RadzenRequiredValidator Component="Message" Text="Название обязательно!" />
+        </Helper>
+    </RadzenFormField>
+
+    <RadzenRow Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mt-4">
+        <RadzenCheckBox @bind-Value=@simplePrompt.Default Name="CheckBox" class="rz-ml-2 rz-my-2" />
+        <RadzenLabel Text="По умолчанию" Component="CheckBox" />
+    </RadzenRow>
+
+    <div class="row">
+        <div class="col">
+            <RadzenButton ButtonType="ButtonType.Submit" style="padding: 0 1rem; margin-left: 1rem; margin-top: 5%;" Icon="save" Text="Записать"></RadzenButton>
+            <RadzenButton Click="@((args) => dialogService.Close("Cancel"))" ButtonStyle="ButtonStyle.Light" Text="Отмена" Style="padding: 0 1rem; margin-left: 1rem; margin-top: 5%;" />
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public SimplePrompt? SelectedSimplePrompt { get; set; }
+
+    SimplePrompt simplePrompt = new SimplePrompt();
+
+    bool errorTextVisible = false;
+    string errorText = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (SelectedSimplePrompt is not null)
+        {
+            simplePrompt.Message = SelectedSimplePrompt.Message;
+            simplePrompt.Default = SelectedSimplePrompt.Default;
+        }
+    }
+
+    async void OnSubmit()
+    {
+        // 1. Подготовительные мероприятия
+        string input = simplePrompt.Message.Replace("\n", "").Replace("\r", "").Replace("\t", "");
+
+        // Убрать лишние пробелы между словами
+        string text = Regex.Replace(input, @"\s+", " ");
+
+        // Обрезать начальные и конечные пробелы
+        simplePrompt.Message = text.Trim();
+
+
+
+        // 2. Записать промт в базу данных
+        if (SelectedSimplePrompt is not null)
+        {
+            SelectedSimplePrompt.Message = simplePrompt.Message;
+            SelectedSimplePrompt.Default = simplePrompt.Default;
+
+            ExecutionResult result = await promptService.UpdatePromptAsync(SelectedSimplePrompt);
+
+            if (!result.CompletedSuccessfully)
+            {
+                errorTextVisible = true;
+                errorText = result.ErrorText;
+
+                StateHasChanged();
+                return;
+            }
+        }
+        else
+        {
+            simplePrompt.Message = simplePrompt.Message;
+
+            ExecutionResult result = await promptService.AddPromptAsync(simplePrompt);
+
+            if (!result.CompletedSuccessfully)
+            {
+                errorTextVisible = true;
+                errorText = result.ErrorText;
+
+                StateHasChanged();
+                return;
+            }
+        }
+
+
+        // 3. Закрыть форму
+        dialogService.Close(simplePrompt);
+    }
+}

@@ -1,0 +1,6 @@
+@NoSqlBaseApi_HostAddress = http://localhost:5293
+
+GET {{NoSqlBaseApi_HostAddress}}/tags/
+Accept: application/json
+
+###

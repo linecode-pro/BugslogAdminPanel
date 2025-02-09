@@ -1,0 +1,66 @@
+name: "bagslog2025"
+
+services:
+
+  nosqlbaseapi:
+    image: ${DOCKER_REGISTRY-}nosqlbaseapi
+    container_name: nosqlbaseapi
+    build:
+      context: .
+      dockerfile: NoSqlBaseApi/Dockerfile
+    ports:
+        - "5101:80"
+    environment:
+      "ASPNETCORE_ENVIRONMENT": "Development"
+      "ASPNETCORE_URLS": "http://+:80"
+      "RavenDB__ServerURL": ${RavenDB_ServerURL}
+      "RavenDB__DatabaseName": ${RavenDB_DatabaseName}
+      "RavenDB__CertificateFileName": ${RavenDB_CertificateFileName}
+      
+  aiengineapi:
+    image: ${DOCKER_REGISTRY-}aiengineapi
+    container_name: aiengineapi
+    user: root
+    build:
+      context: .
+      dockerfile: AIEngineApi/Dockerfile
+    ports:
+       - "5102:80"
+    environment:
+      "ASPNETCORE_ENVIRONMENT": "Development"
+      "ASPNETCORE_URLS": "http://+:80"
+      "ApiNoSqlBaseUrl": "http://nosqlbaseapi:80"
+      "GigaChat:Credentials": ${GigaChat_Credentials}
+      "GigaChat:ServerURL_Token": ${GigaChat_ServerURL_Token}
+      "GigaChat:rqUID": ${GigaChat_rqUID}
+      "GigaChat:ServerURL_Request": ${GigaChat_ServerURL_Request}   
+    depends_on:
+      - nosqlbaseapi
+         
+  bugslogadminpanel:
+    image: ${DOCKER_REGISTRY-}bugslogadminpanel
+    container_name: bugslogadminpanel
+    build:
+      context: .
+      dockerfile: BugslogAdminPanel/Dockerfile
+    ports:
+        - "8080:80"       # HTTP
+        - "8081:8081"     # HTTPS
+    environment:
+      "ASPNETCORE_URLS": "https://+:8081;http://+:80"
+      "ASPNETCORE_Kestrel__Certificates__Default__Password": "Password123"
+      "ASPNETCORE_Kestrel__Certificates__Default__Path": "certs/my-certificate.pfx"
+      "ASPNETCORE_ENVIRONMENT": "Development"
+      "ApiNoSqlBaseUrl": "http://nosqlbaseapi:80"
+      "AIChatApiUrl": "http://aiengineapi:80"
+    depends_on:
+      - nosqlbaseapi
+      - aiengineapi
+    volumes:
+      - ./certs:/root/.aspnet/https:ro- 
+    
+
+  
+
+
+

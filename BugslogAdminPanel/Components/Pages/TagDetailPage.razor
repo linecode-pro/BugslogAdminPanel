@@ -1,0 +1,82 @@
+﻿@using BugslogAdminPanel.Data
+@using BugslogAdminPanel.Services
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@inject ITagService tagService;
+@inject DialogService dialogService;
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" @bind-Visible="errorTextVisible">
+    @errorText
+</RadzenAlert>
+
+<RadzenTemplateForm Visible="true" TItem="SimpleTag" Data=@simpleTag Submit=@OnSubmit>
+    <RadzenFormField Text="Наименование">
+        <ChildContent>
+            <RadzenTextBox Style="width: 36em" Name="Name" @bind-Value=@simpleTag.Name />
+        </ChildContent>
+        <Helper>
+            <RadzenRequiredValidator Component="Name" Text="Название обязательно!" />
+        </Helper>
+    </RadzenFormField>
+    <div class="row">
+        <div class="col">
+            <RadzenButton ButtonType="ButtonType.Submit" style="padding: 0 1rem; margin-left: 1rem; margin-top: 5%;" Icon="save" Text="Записать"></RadzenButton>
+            <RadzenButton Click="@((args) => dialogService.Close("Cancel"))" ButtonStyle="ButtonStyle.Light" Text="Отмена" Style="padding: 0 1rem; margin-left: 1rem; margin-top: 5%;" />
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public SimpleTag? SelectedSimpleTag { get; set; }
+
+    SimpleTag simpleTag = new SimpleTag();
+
+    bool errorTextVisible = false;
+    string errorText = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (SelectedSimpleTag is not null)
+        {
+            simpleTag.Name = SelectedSimpleTag.Name;
+        }
+    }
+
+    async void OnSubmit()
+    {
+        if (SelectedSimpleTag is not null)
+        {
+            SelectedSimpleTag.Name = simpleTag.Name.Trim();
+
+            ExecutionResult result = await tagService.UpdateTagAsync(SelectedSimpleTag);
+
+            if (!result.CompletedSuccessfully)
+            {
+                errorTextVisible = true;
+                errorText = result.ErrorText;
+
+                StateHasChanged();
+                return;
+            }
+        }
+        else
+        {
+            simpleTag.Name = simpleTag.Name.Trim();
+
+            ExecutionResult result = await tagService.AddTagAsync(simpleTag);
+
+            if (!result.CompletedSuccessfully)
+            {
+                errorTextVisible = true;
+                errorText = result.ErrorText;
+
+                StateHasChanged();
+                return;
+            }
+        }
+
+        // Закрыть форму
+        dialogService.Close(simpleTag);
+    }
+}

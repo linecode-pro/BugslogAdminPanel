@@ -1,0 +1,74 @@
+﻿@page "/settings"
+
+@using BugslogAdminPanel.Data
+@using BugslogAdminPanel.Services
+
+@rendermode InteractiveServer
+
+@inject ITagService tagService;
+@inject IPromptService promptService;
+@inject NotificationService notificationService;
+
+<PageTitle>Settings</PageTitle>
+
+<h3>Настройки</h3>
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" @bind-Visible="errorTextVisible">
+    @errorText
+</RadzenAlert>
+
+<RadzenStack Gap="2em" Style="margin-left: 4em; margin-top: 4em; width: 30em">
+    <RadzenButton Text="Установить теги по умолчанию" BusyText="Идёт процесс выполнения..." IsBusy=@isBusyTags Click="@SetDefaultTags" ButtonStyle="ButtonStyle.Primary"  />
+    <RadzenButton Text="Установить промты по умолчанию" BusyText="Идёт процесс выполнения..." IsBusy=@isBusyPrompts Click="@SetDefaultPrompts" ButtonStyle="ButtonStyle.Primary"  />
+</RadzenStack>
+
+@code {
+
+    bool errorTextVisible = false;
+    string errorText = string.Empty;
+
+    bool isBusyTags = false;
+    bool isBusyPrompts = false;
+
+    async Task SetDefaultTags()
+    {
+        isBusyTags = true;
+
+        ExecutionResult result = await tagService.SetDefaultTagsAsync();
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+
+            StateHasChanged();
+        }
+        else
+        {
+            notificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Готово!", Detail = "Установлены теги по умолчанию", Duration = 3000 });
+        }
+
+        isBusyTags = false;
+    }
+
+    async Task SetDefaultPrompts()
+    {
+        isBusyPrompts = true;
+
+        ExecutionResult result = await promptService.SetDefaultPromptsAsync();
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+
+            StateHasChanged();
+        }
+        else
+        {
+            notificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Готово!", Detail = "Установлены промты по умолчанию", Duration = 3000 });
+        }
+
+        isBusyPrompts = false;
+    }
+}

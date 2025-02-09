@@ -1,0 +1,146 @@
+﻿@page "/test"
+
+@using BugslogAdminPanel.Data
+@using BugslogAdminPanel.Services
+
+@rendermode InteractiveServer
+
+@inject ITagService tagService;
+@inject IPromptService promptService;
+@inject IAIChatService chatService;
+
+<PageTitle>Test</PageTitle>
+
+<h3>Тест</h3>
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" @bind-Visible="errorTextVisible">
+    @errorText
+</RadzenAlert>
+
+<RadzenButton Text="Получить действующие настройки" BusyText="Идёт процесс выполнения..." IsBusy=@isBusyTags Click="@GetDefaulSettings" ButtonStyle="ButtonStyle.Primary" Style="margin-top: 2em;" />
+
+<RadzenStack Style="width: 60em; margin-top: 1em;" Orientation="Orientation.Horizontal">
+    <RadzenFormField Text="Сообщение">
+        <ChildContent>
+            <RadzenTextArea Style="width: 30em; height: 12em" Name="Message" @bind-Value=@promptText Disabled="true"/>
+        </ChildContent>
+    </RadzenFormField>
+
+    <RadzenFormField Text="Теги">
+        <ChildContent>
+            <RadzenTextArea Style="width: 30em; height: 12em" Name="Message" @bind-Value=@tagsText Disabled="true" />
+        </ChildContent>
+    </RadzenFormField>
+</RadzenStack>
+
+<RadzenTemplateForm TItem="string" Style="margin-top: 2em;">
+    <RadzenFormField Text="Текст заявки">
+        <ChildContent>
+            <RadzenTextArea Style="width: 36em; height: 10em" Name="Message" @bind-Value=@message />
+        </ChildContent>
+        <Helper>
+            <RadzenRequiredValidator Component="Message" Text="Текст должен быть заполнен обязательно!" />
+        </Helper>
+    </RadzenFormField>
+
+    <div class="row">
+        <div class="col">
+            <RadzenButton Text="Получить ответ" Click="MakeRequestToAI" BusyText="Идёт процесс выполнения..." IsBusy=@isBusyPrompts ButtonStyle="ButtonStyle.Primary" Style="margin-top: 2em;" />
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+<RadzenStack Style=" margin-top: 2em;" Gap="0">
+    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-ml-2">Ответ</RadzenText>
+    <RadzenTextArea Style="width: 36em; height: 10em;" @bind-Value=@answer />
+</RadzenStack>
+
+
+
+
+
+@code {
+
+    bool errorTextVisible = false;
+    string errorText = string.Empty;
+
+    bool isBusyTags = false;
+    bool isBusyPrompts = false;
+
+    string promptText = string.Empty;
+    string tagsText = string.Empty;
+
+    string message = string.Empty;
+    string answer = string.Empty;
+
+    RadzenTemplateForm<string> my_form = new();
+
+    async Task GetDefaulSettings()
+    {
+        isBusyTags = true;
+
+        // 1. Получить промт по умолчанию
+        ExecutionResult result = await promptService.GetDefaultPromptAsync();
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+        }
+        else
+        {
+            var prompt = result?.Data as SimplePrompt ?? new();
+            promptText = prompt.Message;
+        }
+
+        // 2. Получить теги
+        result = await tagService.GetAllTagsAsync();
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+
+
+        }
+        else
+        {
+            var tags = result?.Data as List<SimpleTag> ?? new();
+
+            foreach (var item in tags)
+            {
+                tagsText = tagsText + ((tagsText == string.Empty) ? "" : "\n") + item.Name;
+            }
+        }
+
+        StateHasChanged();
+
+        isBusyTags = false;
+    }
+
+    async Task MakeRequestToAI()
+    {
+        answer = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        isBusyPrompts = true;
+
+        ExecutionResult result = await chatService.MakeRequestToAIAsync(message);
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+
+            StateHasChanged();
+        }
+        else
+        {
+            answer = result?.Data as string ?? string.Empty;
+        }
+
+        isBusyPrompts = false;
+    }
+}

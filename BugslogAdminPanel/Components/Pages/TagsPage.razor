@@ -1,0 +1,150 @@
+﻿@page "/tags"
+@rendermode InteractiveServer
+
+@using BugslogAdminPanel.Data
+@using BugslogAdminPanel.Services
+
+@inject ITagService tagService;
+@inject DialogService dialogService;
+
+<PageTitle>Tags</PageTitle>
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" @bind-Visible="errorTextVisible">
+    <ChildContent>
+        <span style="white-space: pre-line">@errorText</span>
+    </ChildContent>
+</RadzenAlert>
+
+<RadzenRow JustifyContent="JustifyContent.SpaceAround">
+    <RadzenDataGrid TItem="SimpleTag" AllowColumnResize="true" AllowAlternatingRows="false" AllowSorting="true" PageSize="30" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" ShowPagingSummary="true"
+    Data="@tags" SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedTags IsLoading=@isLoading 
+    class="shadow-sm rz-border-radius-2" Style="width: 80vw; height: 88vh" EmptyText="Нет информации о тегах."
+                    GridLines="DataGridGridLines.Both" RowDoubleClick="@(args => EditSimpleTag(args.Data))" @onkeyup="@KeyWasPressed">
+        <HeaderTemplate>
+            <RadzenButton Click="@GetAllTags" Text="Получить теги" Icon="refresh" Size="ButtonSize.Small" class="rz-mr-1" />
+            <RadzenButton Click="@AddTag" Text="Добавить" Icon="add_circle" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" class="rz-mr-1" />
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn TItem="SimpleTag" Title="" Filterable="true" Sortable="false" Width="60px" TextAlign="TextAlign.Center">
+                <Template Context="data">
+                    <RadzenButton Click=@(args => DeleteTag(data)) Icon="highlight_off" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Variant="Variant.Text" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(SimpleTag.Id)" Title="Ид" TextAlign="TextAlign.Center" Width="300px" />
+            <RadzenDataGridColumn Property="@nameof(SimpleTag.Name)" Title="Тег" />            
+        </Columns>
+    </RadzenDataGrid>
+</RadzenRow>
+
+@code {
+
+    IQueryable<SimpleTag> tags = default!;
+    IList<SimpleTag>? selectedTags;
+
+    bool errorTextVisible = false;
+    string errorText = string.Empty;
+
+    bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        tags = new List<SimpleTag>().AsQueryable();
+    }
+
+    async Task GetAllTags()
+    {
+        isLoading = true;
+
+        errorTextVisible = false;
+        errorText = string.Empty;
+
+        selectedTags = default!;
+
+        // Отправить запрос - получить список всех тегов
+        ExecutionResult result = await tagService.GetAllTagsAsync();
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;
+            isLoading = false;
+            return;
+        }
+        else
+        {
+            errorTextVisible = false;
+            errorText = string.Empty;
+        }
+
+        tags = (result?.Data as List<SimpleTag> ?? new()).AsQueryable();
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    async Task AddTag()
+    {
+        var addResult = await dialogService.OpenAsync<TagDetailPage>("Тег (*новый*)",
+                        new Dictionary<string, object>() { },
+                        new DialogOptions() { CloseDialogOnOverlayClick = true, Width = "40em", CssClass = "animate__animated animate__zoomIn animate__faster" });
+
+        if (addResult == null || addResult?.ToString() == "Cancel")
+            return;
+
+        // Обновить список тегов
+        await GetAllTags();
+    }
+
+    async Task EditSimpleTag(SimpleTag selectedSimpleTag)
+    {
+        var addResult = await dialogService.OpenAsync<TagDetailPage>("Тег",
+                        new Dictionary<string, object>() { { "SelectedSimpleTag", selectedSimpleTag } },
+                        new DialogOptions() { CloseDialogOnOverlayClick = true, Width = "40em", CssClass = "animate__animated animate__zoomIn animate__faster" });
+
+        if (addResult == null || addResult?.ToString() == "Cancel")
+            return;
+
+        // Обновить список тегов
+        await GetAllTags();
+    }
+
+    async Task DeleteTag(SimpleTag selectedTag)
+    {
+        // 1. Удалить элемент справочника
+        ExecutionResult result = await tagService.DeleteTagAsync(selectedTag);
+
+        if (!result.CompletedSuccessfully)
+        {
+            errorTextVisible = true;
+            errorText = result.ErrorText;   
+        }
+       
+        // Обновить список тегов
+        await GetAllTags();
+    }
+
+    async Task KeyWasPressed(KeyboardEventArgs eventArgs)
+    {
+        switch (eventArgs.Code)
+        {
+            case "Insert":
+
+                // Добавить новый тег
+                await AddTag();
+
+                break;
+
+            case "Delete":
+
+                // Удалить выбранный тег
+                if (selectedTags?.Count > 0)
+                {
+                    await DeleteTag(selectedTags[0]);
+                }
+
+                break;
+        }
+    }
+}
